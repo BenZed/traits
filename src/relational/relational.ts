@@ -1,4 +1,4 @@
-import { nil } from '@benzed/types'
+import { nil, isDefined } from '@benzed/types'
 
 import { $$parent, getParent, isRelational, setParent } from './parent'
 
@@ -88,8 +88,17 @@ abstract class Relational extends Trait {
                 const isParentKey = key === $$parent
 
                 // clear parent of node being over-written
-                if (!isParentKey && isRelational(node[key]))
-                    setParent(node[key], nil)
+                if (
+                    !isParentKey &&
+                    isRelational(value) &&
+                    isDefined(value[$$parent])
+                ) {
+                    throw new Error(
+                        `Cannot set parent of property ${String(
+                            key
+                        )} without clearing value's existing parent`
+                    )
+                }
 
                 // set parent of new node
                 if (!isParentKey && isRelational(value))

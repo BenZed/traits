@@ -7,58 +7,79 @@ import { Trait } from '../trait'
 
 //// Types ////
 
-class Person extends Trait.use(Relational) {
-    constructor() {
+class Node extends Trait.use(Relational) {
+    constructor(data: string) {
         super()
+        Object.assign(this, { data })
         return Relational.apply(this)
     }
 
-    [key: string]: Person | nil
+    [key: string]: Node | nil
 
     get parent() {
-        return Relational.getParent(this) as Person | nil
+        return Relational.getParent(this) as Node | nil
     }
 }
 
 //// Tests ////
 
-describe('auto parent set', () => {
-    it('on property define', () => {
-        const parent = new Person()
-        parent.child = new Person()
-        expect(parent.child.parent).toBe(parent)
+describe(Relational.name + '.' + Relational.apply.name, () => {
+    describe('auto parent set', () => {
+        it('on property define', () => {
+            const parent = new Node('parent')
+            parent.child = new Node('child')
+            expect(parent.child.parent).toBe(parent)
+        })
+
+        it('on property set', () => {
+            const parent = new Node('parent')
+            const child1 = new Node('child1')
+            const child2 = new Node('child2')
+
+            parent.child = child1
+            parent.child = child2
+            expect(child2.parent).toBe(parent)
+        })
+
+        it('throws if parent assigned without being cleared', () => {
+            const alphabet = new Node('alphabet')
+            expect(alphabet.parent).toBe(nil)
+
+            const a = new Node('a')
+            expect(a.parent).toBe(nil)
+
+            alphabet.a = a
+
+            expect(a.parent).toBe(alphabet)
+            expect([...Relational.eachChild(alphabet)]).toEqual([a])
+
+            const alphabet2 = new Node('alphabet2')
+            expect(() => {
+                alphabet2.a = a
+            }).toThrow(`Cannot set parent of property a`)
+
+            delete alphabet.a
+
+            expect(() => {
+                alphabet2.a = a
+            }).not.toThrow()
+
+            expect(a.parent).toEqual(alphabet2)
+            expect([...Relational.eachChild(alphabet2)]).toEqual([a])
+            expect([...Relational.eachChild(alphabet)]).toEqual([])
+        })
     })
 
-    it('on property set', () => {
-        const parent = new Person()
-        const child1 = new Person()
-        const child2 = new Person()
+    describe('auto parent clear', () => {
+        it('on property delete', () => {
+            const parent = new Node('parent')
+            const child = new Node('child')
 
-        parent.child = child1
-        parent.child = child2
-        expect(child2.parent).toBe(parent)
-    })
+            parent.child = child
+            expect(child.parent).toBe(parent)
 
-    it('previous parents are cleared', () => {
-        const parent = new Person()
-        const child1 = new Person()
-        const child2 = new Person()
-
-        parent.child = child1
-        parent.child = child2
-        expect(child1.parent).toBe(nil)
-    })
-})
-
-describe('auto parent clear', () => {
-    it('on property delete', () => {
-        const parent = new Person()
-        const child = new Person()
-
-        parent.child = child
-        expect(child.parent).toBe(parent)
-
-        delete parent.child
-        expect(child.parent).toBe(nil)
+            delete parent.child
+            expect(child.parent).toBe(nil)
+        })
     })
 })

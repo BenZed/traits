@@ -87,6 +87,12 @@ abstract class Relational extends Trait {
 
                 const isParentKey = key === $$parent
 
+                // TODO: isValidParent functionality
+                // if a relational is being assigned as
+                // a property to another relational that is
+                // not a valid parent, it should neither
+                // assign the child or throw an error.
+
                 // clear parent of node being over-written
                 if (
                     !isParentKey &&

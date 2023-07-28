@@ -5,7 +5,7 @@ import { it, describe, test, expect } from '@jest/globals'
 import Mutate from './mutate'
 import { Trait } from '../trait'
 
-import { isNumber } from '@benzed/util'
+import { isNumber } from '@benzed/types'
 
 //// EsLint ////
 /* eslint-disable 
@@ -15,33 +15,27 @@ import { isNumber } from '@benzed/util'
 //// Tests ////
 
 test('Simple Example', () => {
-
     class Damage {
-
         constructor(readonly amount: number) {}
-    
     }
-    
-    class Double extends Mutator<Damage> {
 
-        protected override [Mutate.get](mutator: Mutate<Damage>, key: keyof Damage, proxy: object) {
+    class Double extends Mutator<Damage> {
+        protected override [Mutate.get](
+            mutator: Mutate<Damage>,
+            key: keyof Damage,
+            proxy: object
+        ) {
             const value = Reflect.get(mutator[Mutate.target], key, proxy)
-            return isNumber(value)
-                ? value * 2
-                : value
+            return isNumber(value) ? value * 2 : value
         }
-    
     }
 
     const x2 = new Double(new Damage(5))
     expect(x2).toHaveProperty('amount', 10)
-
 })
 
 test('Trait Overload example', () => {
-
     abstract class Price extends Trait {
-
         abstract get base(): number
 
         abstract get tax(): number
@@ -49,19 +43,22 @@ test('Trait Overload example', () => {
         get amount(): number {
             return this.base * (1 + this.tax)
         }
-
     }
 
     class Sign extends Trait.use(Price) {
-
-        constructor(readonly base: number, readonly tax: number) {
+        constructor(
+            readonly base: number,
+            readonly tax: number
+        ) {
             super()
         }
-
     }
 
     class Coupon extends Mutator<Price> {
-        constructor(readonly discount: number, target: Price) {
+        constructor(
+            readonly discount: number,
+            target: Price
+        ) {
             super(target)
         }
 
@@ -76,11 +73,9 @@ test('Trait Overload example', () => {
 
     expect(sign.amount).toBe(117)
     expect(cheapSign.amount).toBe(58.5)
-
 })
 
 describe('traps', () => {
-
     class Target {
         targetOnly = 0
         shared = 0
@@ -88,9 +83,8 @@ describe('traps', () => {
         targetOnlyMethod() {
             return this.targetOnly
         }
-
     }
-    
+
     class Mod extends Mutator<Target> {
         shared = 1
         modOnly = 1
@@ -110,5 +104,4 @@ describe('traps', () => {
         expect('shared' in mod).toBe(true)
         expect('modOnly' in mod).toBe(true)
     })
-
 })

@@ -1,13 +1,12 @@
+/* eslint-env node */
 module.exports = {
-    roots: [
-        './src'
-    ],
-    testEnvironment: 'jest-environment-node',
+    roots: ['./src'],
+    moduleIgnorePatterns: ['node*'],
     transform: {
         '^.+\\.tsx?$': [
             'ts-jest',
             {
-                tsconfig: '../../tsconfig.test.json'
+                tsconfig: './tsconfig.json'
             }
         ]
     }

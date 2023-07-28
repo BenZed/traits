@@ -1,13 +1,6 @@
+import { nil } from '@benzed/types'
 
-import { nil } from '@benzed/util'
-import { Trait } from '@benzed/traits'
-
-import {
-    $$parent,
-    getParent,
-    isNode, 
-    setParent,
-} from './parent'
+import { $$parent, getParent, isRelational, setParent } from './parent'
 
 import {
     eachAncestor,
@@ -17,12 +10,20 @@ import {
     eachParent,
     eachSibling,
     getChildren,
-    getRoot 
+    getRoot
 } from './relations'
 
 import { getPath } from './path'
 
-import { Find, AssertNode, FindFlag, FindNode, HasNode } from './find'
+import {
+    Find,
+    AssertRelational,
+    FindFlag,
+    FindRelational,
+    HasRelational
+} from './find'
+
+import { Trait } from '../trait'
 
 //// EsLint ////
 
@@ -33,18 +34,17 @@ import { Find, AssertNode, FindFlag, FindNode, HasNode } from './find'
 //// Main ////
 
 /**
- * The node trait creates knowledge of relations between objects,
+ * The Relational trait creates knowledge of relations between objects,
  * allowing them to make assertions based on their relationship structure,
  * or existence of other nodes in their relationship tree.
- * 
- * A node will automatically assign itself as the parent of any
+ *
+ * A relational will automatically assign itself as the parent of any
  * properties that are defined in it that are also nodes.
  */
-abstract class Node extends Trait {
-
+abstract class Relational extends Trait {
     static readonly parent: typeof $$parent = $$parent
 
-    static override readonly is = isNode
+    static override readonly is = isRelational
 
     static readonly setParent = setParent
 
@@ -61,67 +61,63 @@ abstract class Node extends Trait {
 
     static readonly getPath = getPath
 
-    static find<N extends Node>(node: N): FindNode<N> {
+    static find<N extends Relational>(node: N): FindRelational<N> {
         return new Find(node)
     }
 
-    static has<N extends Node>(node: N): HasNode<N> {
+    static has<N extends Relational>(node: N): HasRelational<N> {
         return new Find(node, FindFlag.Has)
     }
 
-    static assert<N extends Node>(node: N, error?: string): AssertNode<N> {
+    static assert<N extends Relational>(
+        node: N,
+        error?: string
+    ): AssertRelational<N> {
         return new Find(node, FindFlag.Assert, error)
     }
 
     /**
      * Imbue a node with logic for assigning parents on property definition,
-     * and unassigning them on property deletion.
+     * and unassign them on property deletion.
      */
-    static override apply<T extends Node>(node: T): T {
-
+    static override apply<T extends Relational>(node: T): T {
         const proxyNode = new Proxy(node, {
-            defineProperty(node, key: keyof Node, descriptor) {
-
+            defineProperty(node, key: keyof Relational, descriptor) {
                 const { value } = descriptor
 
                 const isParentKey = key === $$parent
 
                 // clear parent of node being over-written
-                if (!isParentKey && isNode(node[key]))
+                if (!isParentKey && isRelational(node[key]))
                     setParent(node[key], nil)
 
                 // set parent of new node
-                if (!isParentKey && isNode(value)) 
+                if (!isParentKey && isRelational(value))
                     setParent(value, proxyNode)
 
                 return Reflect.defineProperty(node, key, descriptor)
             },
 
-            deleteProperty(node, key: keyof Node) {
-
+            deleteProperty(node, key: keyof Relational) {
                 const isParentKey = key === $$parent
-                if (!isParentKey && isNode(node[key]))
+                if (!isParentKey && isRelational(node[key]))
                     setParent(node[key], nil)
 
                 return Reflect.deleteProperty(node, key)
             }
         })
 
-        for (const child of eachChild(proxyNode))
-            setParent(child, proxyNode)
+        for (const child of eachChild(proxyNode)) setParent(child, proxyNode)
 
         setParent(proxyNode, nil)
         return proxyNode
     }
 
-    readonly [$$parent]: Node | nil
-
+    readonly [$$parent]: Relational | nil
 }
 
 //// Exports ////
 
-export default Node
+export default Relational
 
-export {
-    Node
-}
+export { Relational }

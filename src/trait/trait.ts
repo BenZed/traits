@@ -1,11 +1,5 @@
-
-import { define } from '@benzed/util/lib'
-import {
-    $$onUse,
-    addTraits,
-    useTraits,
-    _Traits
-} from './add-traits'
+import { define } from '@benzed/util'
+import { $$onUse, addTraits, useTraits, _Traits } from './add-traits'
 
 import { mergeTraits } from './merge-traits'
 
@@ -17,15 +11,14 @@ import { mergeTraits } from './merge-traits'
 
 /**
  * A Trait is essentially a runtime interface.
- * 
+ *
  * Using class syntax to declare abstract properties or partial implementations,
  * a trait will be added to a regular class via mixins.
- * 
+ *
  * Extend this class to make traits, use the static methods
  * on this class to apply them.
  */
 export abstract class Trait {
-
     /**
      * Extend an existing class with an arbitrary number of traits
      */
@@ -35,7 +28,7 @@ export abstract class Trait {
      * Extend a an arbitrary number of traits into a new class.
      */
     static readonly use = useTraits
-    
+
     /**
      * Merge multiple traits into one.
      */
@@ -49,33 +42,32 @@ export abstract class Trait {
 
     /**
      * Per convention, any logic or side effects associated with
-     * the use of a trait are applied with this method. 
-     * 
+     * the use of a trait are applied with this method.
+     *
      * This method is aggregated when merging traits.
      */
     static apply(input: object): object
 
     static apply(input: object, ...traits: _Traits): object {
-        for (const trait of traits)
-            input = trait.apply(input)
+        for (const trait of traits) input = trait.apply(input)
         return input
     }
 
     /**
      * Overwrite this method on extended Traits to allow
      * Traits to be tested for type.
-     * 
+     *
      * This method is aggregated when merging traits.
      */
     static is(input: unknown): input is Trait {
         throw new Error(
-            `${this.name} has not implemented a static typeguard named 'is'`
+            `${this.name} has not implemented a static type guard named 'is'`
         )
     }
 
     /**
-     * Trait consumers may implement theonUse symbolic
-     * method to make static changes to the constructor 
+     * Trait consumers may implement then Use symbolic
+     * method to make static changes to the constructor
      * when using a trait.
      */
     static readonly onUse: typeof $$onUse = $$onUse
@@ -86,32 +78,30 @@ export abstract class Trait {
      */
     constructor() {
         throw new Error(
-            `${Trait.name} class ${this.constructor.name}'s should ` + 
-            'never be constructed.'
+            `${Trait.name} class ${this.constructor.name}'s should ` +
+                'never be constructed.'
         )
     }
-
 }
 
 //// Overrides ////
 
 /**
- * Traits are structrual in nature and don't exist as 
- * instances in practice, so the instanceof operator's 
- * behaviour is modified to mirror the typeguard.
- * 
+ * Traits are structural in nature and don't exist as
+ * instances in practice, so the instanceof operator's
+ * behavior is modified to mirror the type guard.
+ *
  * Any object that fulfills the structural contract outlined
  * by the type guard is considered an instanceof that trait.
  */
-define.nonEnumerable(Trait, Symbol.hasInstance, function (this: typeof Trait, other: unknown): boolean {
-    return this.is(other)
-})
+define.nonEnumerable(
+    Trait,
+    Symbol.hasInstance,
+    function (this: typeof Trait, other: unknown): boolean {
+        return this.is(other)
+    }
+)
 
 //// Exports ////
 
-export {
-    Trait as Traits,
-    addTraits,
-    useTraits,
-    mergeTraits
-}
+export { Trait as Traits, addTraits, useTraits, mergeTraits }

@@ -1,4 +1,4 @@
-import { isShape, isObject, AnyTypeGuard } from '@benzed/util'
+import { isShape, isObject, AnyTypeGuard } from '@benzed/types'
 import { unique } from '@benzed/array'
 
 import { Trait } from '../trait'
@@ -25,7 +25,6 @@ const $$deleteProperty = Symbol('mutator-delete-property')
 //// Main ////
 
 abstract class Mutate<T extends object> extends Trait {
-
     static readonly target: typeof $$target = $$target
     static readonly get: typeof $$get = $$get
     static readonly set: typeof $$set = $$set
@@ -35,11 +34,12 @@ abstract class Mutate<T extends object> extends Trait {
     static readonly setPrototypeOf: typeof $$setPrototypeOf = $$setPrototypeOf
     static readonly defineProperty: typeof $$defineProperty = $$defineProperty
     static readonly deleteProperty: typeof $$deleteProperty = $$deleteProperty
-    static readonly getOwnPropertyDescriptor: typeof $$getOwnPropertyDescriptor = $$getOwnPropertyDescriptor
+    static readonly getOwnPropertyDescriptor: typeof $$getOwnPropertyDescriptor =
+        $$getOwnPropertyDescriptor
 
     /**
      * Imbue a mutator with proxy traps that relegate operations to the mutate target, unless
-     * the mutator defines overrides. 
+     * the mutator defines overrides.
      */
     static override apply<T extends Mutate<object>>(mutator: T): T {
         return new Proxy(mutator, {
@@ -55,7 +55,9 @@ abstract class Mutate<T extends object> extends Trait {
         }) as T
     }
 
-    static override readonly is: <Tx extends object>(input: unknown) => input is Mutate<Tx> = isShape({
+    static override readonly is: <Tx extends object>(
+        input: unknown
+    ) => input is Mutate<Tx> = isShape({
         [$$target]: isObject
     }) as AnyTypeGuard
 
@@ -64,33 +66,35 @@ abstract class Mutate<T extends object> extends Trait {
     abstract get [$$target](): T
 
     protected [$$get](mutator: Mutate<T>, key: keyof T, proxy: this) {
-
-        const target = key === $$target || Reflect.has(mutator, key)
-            ? mutator
-            : mutator[$$target]
+        const target =
+            key === $$target || Reflect.has(mutator, key)
+                ? mutator
+                : mutator[$$target]
 
         return Reflect.get(target, key, proxy)
     }
 
-    protected [$$set](mutator: Mutate<T>, key: keyof T, value: T[keyof T], receiver: unknown) {
-
-        const target = key === $$target || Reflect.has(mutator, key)
-            ? mutator
-            : mutator[$$target]
+    protected [$$set](
+        mutator: Mutate<T>,
+        key: keyof T,
+        value: T[keyof T],
+        receiver: unknown
+    ) {
+        const target =
+            key === $$target || Reflect.has(mutator, key)
+                ? mutator
+                : mutator[$$target]
 
         return Reflect.set(target, key, value, receiver)
     }
 
     protected [$$has](mutator: Mutate<T>, key: keyof T) {
-        return (
-            Reflect.has(mutator, key) ||
-            Reflect.has(mutator[$$target], key)
-        )
+        return Reflect.has(mutator, key) || Reflect.has(mutator[$$target], key)
     }
 
     protected [$$getPrototypeOf](mutator: Mutate<T>) {
         return Reflect.getPrototypeOf(mutator[$$target])
-    } 
+    }
 
     protected [$$setPrototypeOf](mutator: Mutate<T>, proto: object) {
         return Reflect.setPrototypeOf(mutator[$$target], proto)
@@ -99,19 +103,19 @@ abstract class Mutate<T extends object> extends Trait {
     protected [$$ownKeys](mutator: Mutate<T>) {
         return [
             ...Reflect.ownKeys(mutator),
-            ...Reflect.ownKeys(mutator[$$target]),
+            ...Reflect.ownKeys(mutator[$$target])
         ].filter(unique)
-    } 
+    }
 
     protected [$$defineProperty](
-        mutator: Mutate<T>, 
-        key: PropertyKey, 
+        mutator: Mutate<T>,
+        key: PropertyKey,
         attributes: PropertyDescriptor
     ) {
-
-        const target = key === $$target || Reflect.has(mutator, key)
-            ? mutator
-            : mutator[$$target]
+        const target =
+            key === $$target || Reflect.has(mutator, key)
+                ? mutator
+                : mutator[$$target]
 
         return Reflect.defineProperty(target, key, attributes)
     }
@@ -120,19 +124,19 @@ abstract class Mutate<T extends object> extends Trait {
         return Reflect.deleteProperty(mutator[$$target], key)
     }
 
-    protected [$$getOwnPropertyDescriptor](mutator: Mutate<T>, key: PropertyKey) {
+    protected [$$getOwnPropertyDescriptor](
+        mutator: Mutate<T>,
+        key: PropertyKey
+    ) {
         return (
-            Reflect.getOwnPropertyDescriptor(mutator, key) ?? 
+            Reflect.getOwnPropertyDescriptor(mutator, key) ??
             Reflect.getOwnPropertyDescriptor(mutator[$$target], key)
         )
     }
-
 }
 
 //// Exports ////
 
 export default Mutate
 
-export {
-    Mutate
-}
+export { Mutate }

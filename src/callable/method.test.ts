@@ -1,10 +1,10 @@
-
 import { test, it, expect, describe } from '@jest/globals'
-import { Falsy, Func, toVoid } from '@benzed/util'
 
-import { expectTypeOf } from 'expect-type'
 import { Method } from './method'
 import { Callable } from './callable'
+
+import { toVoid } from '@benzed/util'
+import { Falsy, Func } from '@benzed/types'
 
 //// EsLint ////
 /* eslint-disable 
@@ -14,11 +14,9 @@ import { Callable } from './callable'
 //// Callable Trait ////
 
 class Multiply extends Method<(i: number) => number> {
-
     constructor(public by: number) {
         super(i => this.by * i)
     }
-
 }
 
 //// Exports ////
@@ -29,8 +27,7 @@ it('is abstract', () => {
 })
 
 test('creates instances with call signatures', () => {
-
-    const x2 = new Multiply(2) 
+    const x2 = new Multiply(2)
 
     expect(x2.constructor).toBe(Multiply)
     expect(x2(1)).toBe(2)
@@ -38,10 +35,8 @@ test('creates instances with call signatures', () => {
 })
 
 it('keeps getters, setters and instance instance methods', () => {
-
     abstract class ValueCallable<T> extends Method<() => T> {
-        
-        abstract get value(): T 
+        abstract get value(): T
         abstract set value(value: T)
 
         getValue(): T {
@@ -55,16 +50,15 @@ it('keeps getters, setters and instance instance methods', () => {
         constructor() {
             super(() => this.value)
         }
- 
-    } 
+    }
 
     class Number extends ValueCallable<number> {
         constructor(public value = 0) {
             super()
-        } 
-    } 
+        }
+    }
 
-    const value = new Number(5) 
+    const value = new Number(5)
 
     expect(value).toHaveProperty('value', 5)
     expect(value).toHaveProperty('getValue')
@@ -83,10 +77,9 @@ it('keeps getters, setters and instance instance methods', () => {
     value.value = 15
     expect(value.value).toEqual(15)
     expect(value.getValue()).toEqual(15)
-    expect(value()).toEqual(15)   
+    expect(value()).toEqual(15)
 
     class ArrayValue extends ValueCallable<number[]> {
-
         unwrap(): number {
             return this.value[0]
         }
@@ -94,19 +87,16 @@ it('keeps getters, setters and instance instance methods', () => {
         constructor(public value: number[]) {
             super()
         }
-
     }
 
     const arrayValue = new ArrayValue([5])
     expect(arrayValue.getValue()).toEqual([5])
     expect(arrayValue.unwrap()).toEqual(5)
-}) 
+})
 
-it('gets symbolic properties', () => {  
- 
+it('gets symbolic properties', () => {
     const $$true = Symbol('unique')
-    class Symbolic extends Method<() => void> { 
- 
+    class Symbolic extends Method<() => void> {
         protected [$$true] = true
 
         constructor() {
@@ -115,22 +105,17 @@ it('gets symbolic properties', () => {
 
         *[Symbol.iterator](): IterableIterator<symbol> {
             yield $$true
-        } 
+        }
+    }
 
-    } 
-
-    const symbolic = new Symbolic() 
+    const symbolic = new Symbolic()
     expect([...symbolic]).toEqual([$$true])
-
 })
 
 it('instanceof', () => {
+    class Foo extends Method<Func> {}
 
-    class Foo extends Method<Func> {
-
-    }
-
-    const foo = new Foo(parseInt) 
+    const foo = new Foo(parseInt)
     expect(foo).toBeInstanceOf(Foo)
     expect(foo).toBeInstanceOf(Function)
 
@@ -141,11 +126,14 @@ it('instanceof', () => {
     expect(bar).toBeInstanceOf(Function)
 
     expect({} instanceof Bar).toBe(false)
-    expect(function() { /**/ } instanceof Bar).toBe(false)
+    expect(
+        function () {
+            /**/
+        } instanceof Bar
+    ).toBe(false)
     expect((null as unknown) instanceof Bar).toBe(false)
     expect((NaN as unknown) instanceof Bar).toBe(false)
     expect({} instanceof Bar).toBe(false)
-
 })
 
 it('multiple signatures', () => {
@@ -156,15 +144,11 @@ it('multiple signatures', () => {
     }
 
     abstract class Converter<T extends number> extends Method<Convert<T>> {
-
         constructor() {
             super(function (this: any, to?: string) {
-                
-                if (to === 'string')
-                    return `${this.value}`
+                if (to === 'string') return `${this.value}`
 
-                if (to === 'boolean')
-                    return !!this.value
+                if (to === 'boolean') return !!this.value
 
                 return this.value
             })
@@ -180,26 +164,23 @@ it('multiple signatures', () => {
     const converter = new ConvertFive()
 
     expect(converter()).toEqual(5)
-    expectTypeOf(converter()).toEqualTypeOf<5>()
+    converter() satisfies 5
 
     expect(converter('string')).toEqual('5')
-    expectTypeOf(converter('string')).toEqualTypeOf<`${5}`>()
-    expectTypeOf(converter('string')).toEqualTypeOf<'5'>()
+    converter('string') satisfies `${5}`
+    converter('string') satisfies `5`
 
     expect(converter('boolean')).toEqual(true)
-    expectTypeOf(converter('boolean')).toEqualTypeOf<true>()
+    converter('boolean') satisfies true
 })
 
 describe('this context', () => {
-
     it('function definition can use this', () => {
-
         interface ReturnsSelfKeyValue {
             <K extends keyof this>(key: K): this[K]
         }
 
         class Foo extends Method<ReturnsSelfKeyValue> {
-
             bar = 'bar' as const
             zero = 0 as const
 
@@ -208,24 +189,23 @@ describe('this context', () => {
                     return this[k]
                 })
             }
-
         }
 
-        const foo = new Foo() 
+        const foo = new Foo()
 
         expect(foo('bar')).toEqual('bar')
-        expectTypeOf(foo('bar')).toEqualTypeOf<'bar'>()
+        foo('bar') satisfies 'bar'
+
         expect(foo('zero')).toEqual(0)
-        expectTypeOf(foo('zero')).toEqualTypeOf<0>()
+        foo('zero') satisfies 0
     })
 
-    it('can return this', () => { 
-
+    it('can return this', () => {
         interface ReturnsSelf {
             (): this
         }
 
-        class Chain extends Method<ReturnsSelf> { 
+        class Chain extends Method<ReturnsSelf> {
             constructor() {
                 super(function (this: any) {
                     return this
@@ -237,7 +217,7 @@ describe('this context', () => {
 
         expect(chain()).toEqual(chain)
         expect(chain()).toBeInstanceOf(Chain)
-        expectTypeOf(chain()).toEqualTypeOf<Chain>()
+        chain() satisfies Chain
 
         class ExtendedChain extends Chain {}
 
@@ -245,37 +225,32 @@ describe('this context', () => {
 
         expect(eChain()).toEqual(eChain)
         expect(eChain()).toBeInstanceOf(ExtendedChain)
-        expectTypeOf(eChain()).toMatchTypeOf<ExtendedChain>()
+        eChain() satisfies ExtendedChain
     })
 
     it('can be bound', () => {
-
         class Shout extends Method<() => string> {
-
             constructor(protected readonly _words: string) {
                 super(function (this: any) {
-                    const ctx = (this[Callable.context] ?? this) as { _words: string }
+                    const ctx = (this[Callable.context] ?? this) as {
+                        _words: string
+                    }
                     return `${ctx?._words}!`
                 })
             }
-
         }
 
         const shout = new Shout('hello')
 
         expect(shout()).toEqual('hello!')
-        expect(shout.call({ _words: 'sup'})).toEqual('sup!')
-        expect(shout.call({ _words: ''})).toEqual('!')
+        expect(shout.call({ _words: 'sup' })).toEqual('sup!')
+        expect(shout.call({ _words: '' })).toEqual('!')
         expect(shout.call(undefined)).toEqual('hello!')
-
     })
-
 })
 
-it('retreive signature', () => {
-
+it('retrieve signature', () => {
     class Voider extends Method<() => void> {
-
         constructor() {
             super(toVoid)
         }
@@ -285,10 +260,8 @@ it('retreive signature', () => {
     expect(voider[Callable.signature]).toEqual(toVoid)
 })
 
-it('retreive context', () => {
-
+it('retrieve context', () => {
     class Voider extends Method<() => void> {
-
         constructor() {
             super(function (this: any) {
                 return this[Callable.context]

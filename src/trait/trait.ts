@@ -78,8 +78,8 @@ export abstract class Trait {
      */
     constructor() {
         throw new Error(
-            `${Trait.name} class ${this.constructor.name}'s should ` +
-                'never be constructed.'
+            `${this.constructor.name} is a ${Trait.name} extension` +
+                'and should never be constructed.'
         )
     }
 }

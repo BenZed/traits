@@ -1,4 +1,5 @@
-import { define, Func } from '@benzed/util'
+import { define } from '@benzed/util'
+import { Func } from '@benzed/types'
 
 import { Trait } from '../trait'
 import { Callable } from './callable'
@@ -10,7 +11,6 @@ import { Callable } from './callable'
  * simply takes the call signature as an argument.
  */
 const Method = class extends Trait.use(Callable) {
-
     static readonly signature: typeof Callable.signature = Callable.signature
     static readonly context: typeof Callable.context = Callable.context
 
@@ -19,7 +19,6 @@ const Method = class extends Trait.use(Callable) {
         define.hidden(this, Callable.signature, signature)
         return Callable.apply(this)
     }
-
 } as abstract new <F extends Func>(signature: F) => Callable<F>
 
 //// Exports ////

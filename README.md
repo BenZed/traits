@@ -1,2 +1,2 @@
 # traits
- ixins that behave basically like runtime interfaces
+Mixins that behave basically like runtime interfaces

@@ -86,3 +86,44 @@ test('preserves static symbols', () => {
     expect(Toy.type).toBe(Shape.type)
     expect(Toy.alpha).toBe(Color.alpha)
 })
+
+test('bugfix: does not inherit static properties of first trait', () => {
+    @trait
+    abstract class Red {
+        static readonly RED_CHANNEL_INDEX = 0
+
+        static readonly is = isShape<Red>({
+            r: isNumber
+        })
+
+        abstract get r(): number
+    }
+
+    @trait
+    abstract class Blue {
+        static readonly BLUE_CHANNEL_INDEX = 1
+
+        static readonly is = isShape<Blue>({
+            b: isNumber
+        })
+
+        abstract get b(): number
+    }
+
+    @trait
+    abstract class Green {
+        static readonly GREEN_CHANNEL_INDEX = 2
+
+        static readonly is = isShape<Green>({
+            b: isNumber
+        })
+
+        abstract get b(): number
+    }
+
+    abstract class Color extends mergeTraits(Red, Blue, Green) {}
+
+    // @ts-expect-error Does not have property
+    void Color.RED_CHANNEL_INDEX
+    expect(Color).not.toHaveProperty('RED_CHANNEL_INDEX')
+})

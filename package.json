@@ -39,7 +39,7 @@
     "dependencies": {
         "@benzed/array": "^4.0.3",
         "@benzed/each": "^1.0.0",
-        "@benzed/types": "^1.0.1",
+        "@benzed/types": "^1.0.2",
         "@benzed/util": "^4.0.0"
     }
 }

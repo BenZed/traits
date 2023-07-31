@@ -1,26 +1,27 @@
-import { test, it, expect, describe, beforeAll } from '@jest/globals'
+import { it, expect, describe, beforeAll } from '@jest/globals'
 
-import { AnyTypeGuard, isEqual, isFunc, isShape, isString } from '@benzed/types'
+import { TypeGuard, isFunc, isShape } from '@benzed/types'
 
-import { Trait } from './trait'
+import { addTraits } from './add-traits'
+import { trait } from './decorator'
 
 //// Setup ////
 
 describe('creates composite classes', () => {
-    abstract class Jumpable extends Trait {
-        static override readonly is: (input: unknown) => input is Jumpable =
-            isShape({
-                jump: isFunc
-            })
+    @trait
+    abstract class Jumpable {
+        static readonly is: TypeGuard<Jumpable> = isShape({
+            jump: isFunc
+        })
 
         abstract jump(): boolean
     }
 
-    abstract class DuckAble extends Trait {
-        static override readonly is: (input: unknown) => input is DuckAble =
-            isShape({
-                duck: isFunc
-            })
+    @trait
+    abstract class DuckAble {
+        static readonly is: TypeGuard<DuckAble> = isShape({
+            duck: isFunc
+        })
 
         abstract duck(): boolean
     }
@@ -32,7 +33,7 @@ describe('creates composite classes', () => {
         ) {}
     }
 
-    class Sprite extends Trait.add(Coordinates, Jumpable, DuckAble) {
+    class Sprite extends addTraits(Coordinates, Jumpable, DuckAble) {
         jump(): boolean {
             return false
         }
@@ -67,71 +68,6 @@ describe('creates composite classes', () => {
         }
 
         // @ts-expect-error NotATrait invalid constructor signature
-        void class Bad extends Trait.add(Coordinates, NotATrait) {}
-    })
-})
-
-describe('onApply', () => {
-    abstract class Emotional extends Trait {
-        static override readonly is: (input: unknown) => input is Emotional =
-            isShape({
-                emotion: isEqual('Happy', 'Sad')
-            }) as AnyTypeGuard
-
-        applies!: number
-
-        static override apply<T extends Emotional>(emotional: T): T {
-            emotional.applies ??= 0
-            emotional.applies++
-            emotional.emotion = 'Happy'
-            return emotional
-        }
-
-        emotion!: 'Happy' | 'Sad'
-    }
-
-    class Occupational extends Trait {
-        static override readonly is: (input: unknown) => input is Emotional =
-            isShape({
-                job: isString
-            }) as AnyTypeGuard
-
-        applies!: number
-
-        static override apply<T extends Occupational>(occupational: T): T {
-            occupational.applies ??= 0
-            occupational.applies++
-            occupational.job ??= 'unemployed'
-            return occupational
-        }
-
-        job!: string
-    }
-
-    class Person extends Trait.use(Emotional) {
-        constructor() {
-            super()
-            return Emotional.apply(this)
-        }
-    }
-
-    class EmployedPerson extends Trait.add(Person, Occupational) {
-        constructor() {
-            super()
-            return Occupational.apply(this)
-        }
-    }
-
-    test('apply traits', () => {
-        const person = new Person()
-        expect(person.emotion).toBe('Happy')
-        expect(person.applies).toBe(1)
-    })
-
-    test('apply traits on extended classes', () => {
-        const worker = new EmployedPerson()
-        expect(worker.applies).toBe(2)
-        expect(worker.job).toBe('unemployed')
-        expect(worker.emotion).toBe('Happy')
+        void class Bad extends addTraits(Coordinates, NotATrait) {}
     })
 })

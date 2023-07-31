@@ -1,78 +1,88 @@
-import { Trait } from './trait'
+import { test, expect } from '@jest/globals'
+import { isFunc, isNumber, isShape, isTuple } from '@benzed/types'
 
+import { trait } from './decorator'
+
+import { addTraits } from './add-traits'
 import { mergeTraits } from './merge-traits'
-import { useTraits } from './add-traits'
 
-import { it, expect } from '@jest/globals'
+//// Setup ////
 
-it('should return a new trait that extends the traits', () => {
-    const trait1 = class MyTrait1 extends Trait {
-        static override is(input: unknown): input is MyTrait1 {
-            return true
-        }
+@trait
+class Sharp {
+    static readonly is = isShape<Sharp>({
+        sharp: isFunc
+    })
 
-        get prop1() {
-            return 'value1'
-        }
-        method1() {
-            return 'method1'
-        }
+    sharp() {
+        return 'very sharp!'
     }
-    const trait2 = class MyTrait2 extends Trait {
-        static override is(input: unknown): input is MyTrait2 {
-            return true
-        }
+}
 
-        get prop2() {
-            return 'value2'
-        }
-        method2() {
-            return 'method2'
-        }
+@trait
+class Heavy {
+    static readonly is = isShape<Heavy>({
+        heavy: isFunc
+    })
+
+    heavy() {
+        return 'so very heavy!'
     }
-    const mergedTrait = mergeTraits(trait1, trait2)
+}
 
-    expect(mergedTrait.prototype).toBeInstanceOf(trait1)
-    expect(mergedTrait.prototype).toBeInstanceOf(trait2)
+class Weapon extends mergeTraits(Sharp, Heavy) {
+    static override is(input: unknown): input is Weapon {
+        return super.is(input) && 'damage' in input && isFunc(input.damage)
+    }
+
+    damage() {
+        return 'so much damage!'
+    }
+}
+
+class Sword extends addTraits(class {}, Weapon) {}
+
+//// Tests ////
+
+test('result is a trait', () => {
+    expect(Weapon.is).toEqual(expect.any(Function))
+    expect(() => new Weapon()).toThrow(
+        Weapon.name + ' is a trait and must not be constructed'
+    )
+
+    const sword = new Sword()
+
+    expect(sword).toBeInstanceOf(Sword)
+    expect(sword).toBeInstanceOf(Weapon)
+    expect(sword).toBeInstanceOf(Heavy)
+    expect(sword).toBeInstanceOf(Sharp)
 })
 
-it('should add properties and methods from all traits to the new trait', () => {
-    const trait1 = class MyTrait1 extends Trait {
-        get prop1() {
-            return 'value1'
-        }
-        method1() {
-            return 'method1'
-        }
-    }
-    const trait2 = class MyTrait2 extends Trait {
-        get prop2() {
-            return 'value2'
-        }
-        method2() {
-            return 'method2'
-        }
-    }
-    const MergedTraits = mergeTraits(trait1, trait2)
+test('preserves static symbols', () => {
+    //
 
-    const mergedInstance = new (class extends useTraits(MergedTraits) {})()
-    expect(mergedInstance.prop1).toBe('value1')
-    expect(mergedInstance.method1()).toBe('method1')
-    expect(mergedInstance.prop2).toBe('value2')
-    expect(mergedInstance.method2()).toBe('method2')
-})
+    @trait
+    abstract class Shape {
+        static readonly is = isShape({ sides: isNumber })
 
-it('adds all static symbols', () => {
-    class Sharp extends Trait {
-        static readonly sharp = Symbol('sharp')
+        static readonly type = Symbol('shape-type')
+
+        abstract sides: number
     }
 
-    class Bold extends Trait {
-        static readonly bold = Symbol('sharp')
+    @trait
+    abstract class Color {
+        static readonly is = isShape({
+            rgb: isTuple(isNumber, isNumber, isNumber)
+        })
+
+        static readonly alpha = Symbol('color-alpha')
+
+        abstract rgb: [number, number, number]
     }
 
-    const SharpBold = mergeTraits(Bold, Sharp)
-    expect(SharpBold.sharp).toBe(Sharp.sharp)
-    expect(SharpBold.bold).toBe(Bold.bold)
-    expect(SharpBold.apply).not.toBe(Trait.apply)
+    abstract class Toy extends mergeTraits(Shape, Color) {}
+
+    expect(Toy.type).toBe(Shape.type)
+    expect(Toy.alpha).toBe(Color.alpha)
 })

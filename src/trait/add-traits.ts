@@ -1,100 +1,65 @@
 import { each } from '@benzed/each'
 import { define } from '@benzed/util'
-import { Intersect, isFunc } from '@benzed/types'
+import { Intersect } from '@benzed/types'
 
-import type { Trait } from './trait'
+import { TraitDefinition } from './decorator'
 
 //// EsLint ////
 /* eslint-disable 
     @typescript-eslint/no-explicit-any
 */
 
-//// Symbolic ///
+//// Helper type ////
 
-export const $$onUse = Symbol('on-trait-use')
+type ClassStatic<T extends Class> = {
+    [K in keyof T]: T[K]
+}
 
-//// Helper Types ////
+////  Types ////
 
-type _InstanceTypes<T extends _BaseTraits | _Traits> = T extends [
+// Move Me to @benzed/types
+export type Class =
+    | (new (...args: any[]) => object)
+    | (abstract new (...args: any[]) => object)
+
+export type InstanceTypes<T extends readonly Class[]> = T extends [
     infer T1,
     ...infer Tr
 ]
-    ? T1 extends _BaseTraits[number]
-        ? Tr extends _BaseTraits
-            ? [InstanceType<T1>, ..._InstanceTypes<Tr>]
+    ? T1 extends Class
+        ? Tr extends readonly Class[]
+            ? [InstanceType<T1>, ...InstanceTypes<Tr>]
             : [InstanceType<T1>]
         : []
     : []
 
-type _BaseConstructor = new (...args: any[]) => object
-type _AbstractBaseConstructor = abstract new (...args: any[]) => object
-type _BaseTraits = [
-    base: _BaseConstructor | _AbstractBaseConstructor,
-    ...traits: _Traits
-]
+export type CompositeClass<T extends readonly Class[]> = ClassStatic<T[0]> &
+    (new (...params: ConstructorParameters<T[0]>) => CompositeInstanceType<T>)
 
-//// Helper Types ////
-
-interface _TraitConstructorStatic {
-    apply(instance: object): object
-}
-
-type _TraitConstructor = (new () => Trait) & _TraitConstructorStatic
-type _AbstractTraitConstructor = (abstract new () => Trait) &
-    _TraitConstructorStatic
-
-/**
- * @internal
- */
-export type _Traits = (_TraitConstructor | _AbstractTraitConstructor)[]
-
-//// Composite Types ////
-
-export type Composite<T extends _BaseTraits | _Traits> = Intersect<
-    _InstanceTypes<T>
+export type CompositeInstanceType<T extends readonly Class[]> = Intersect<
+    InstanceTypes<T>
 >
 
-//// AddTraits  ////
-
-export interface AddTraitsConstructor<T extends _BaseTraits | _Traits> {
-    new (...args: ConstructorParameters<T[0]>): Composite<T>
-}
+//// Main ////
 
 /**
- * Extend a base class with any number of trait classes.
- * A trait class cannot have any constructor logic.
+ * Create an extension of a given class with any number of trait definitions.
  */
-export function addTraits<T extends _BaseTraits>(
-    ...[Base, ...Traits]: T
-): AddTraitsConstructor<T> {
-    class BaseWithTraits extends Base {}
+export function addTraits<T extends [Class, ...TraitDefinition[]]>(
+    ...[Class, ...Traits]: T
+): CompositeClass<T> {
+    class ClassWithTraits extends Class {}
 
     for (const Trait of Traits) {
         // apply any prototypal trait implementations
         for (const [key, descriptor] of each.defined.descriptorOf(
             Trait.prototype
         ))
-            define(BaseWithTraits.prototype, key, descriptor)
-
-        // apply any trait constructor mutations
-        if ($$onUse in Trait && isFunc(Trait[$$onUse]))
-            Trait[$$onUse](BaseWithTraits)
+            define(ClassWithTraits.prototype, key, descriptor)
     }
 
-    // composite name
-    const name = [...Traits, Base].map(c => c.name).join('')
-    define.named(name, BaseWithTraits)
+    const compositeClassName = [...Traits, Class].map(c => c.name).join('')
+    define.named(compositeClassName, ClassWithTraits)
 
-    return BaseWithTraits as unknown as AddTraitsConstructor<T>
-}
-
-//// Use Traits ////
-
-export function useTraits<T extends _Traits>(
-    ...Traits: T
-): AddTraitsConstructor<T> {
-    return addTraits(
-        class Base {},
-        ...Traits
-    ) as unknown as AddTraitsConstructor<T>
+    return ClassWithTraits as unknown as CompositeClass<T>
 }

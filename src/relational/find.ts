@@ -128,7 +128,6 @@ const Find = class RelationalFinder extends AbstractCallable<Func> {
     ) {
         super()
         this._each = eachChild(source)
-        return Callable.apply(this)
     }
 
     //// Interface ////

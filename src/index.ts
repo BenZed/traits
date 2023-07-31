@@ -21,7 +21,7 @@ Traits.add = addTraits
 /**
  * Combine a number of traits into one
  */
-Traits.combine = mergeTraits
+Traits.merge = mergeTraits
 
 //// Exports ////
 
@@ -29,4 +29,4 @@ export default Traits
 
 export { trait, Traits }
 
-export type { Trait, CompositeClass, CompositeInstanceType, TraitDefinition }
+export type { Trait, TraitDefinition, CompositeClass, CompositeInstanceType }

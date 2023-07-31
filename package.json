@@ -2,7 +2,7 @@
     "name": "@benzed/traits",
     "description": "Standard for declaring and consuming polymorphic runtime interfaces",
     "main": "./lib",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "publishConfig": {
         "access": "public"
     },
@@ -41,7 +41,7 @@
     },
     "dependencies": {
         "@benzed/each": "^1.0.0",
-        "@benzed/types": "^1.0.2",
+        "@benzed/types": "^1.1.1",
         "@benzed/util": "^4.0.0"
     }
 }

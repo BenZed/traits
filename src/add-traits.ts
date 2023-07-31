@@ -1,6 +1,6 @@
 import { each } from '@benzed/each'
 import { define } from '@benzed/util'
-import { Intersect } from '@benzed/types'
+import { Intersect, Class, AbstractClass } from '@benzed/types'
 
 import { TraitDefinition } from './decorator'
 
@@ -11,43 +11,39 @@ import { TraitDefinition } from './decorator'
 
 //// Helper type ////
 
-type ClassStatic<T extends Class> = {
+type ClassStatic<T extends Class | AbstractClass> = {
     [K in keyof T]: T[K]
 }
 
 ////  Types ////
 
-// Move Me to @benzed/types
-export type Class =
-    | (new (...args: any[]) => object)
-    | (abstract new (...args: any[]) => object)
-
-export type InstanceTypes<T extends readonly Class[]> = T extends [
-    infer T1,
-    ...infer Tr
-]
-    ? T1 extends Class
-        ? Tr extends readonly Class[]
-            ? [InstanceType<T1>, ...InstanceTypes<Tr>]
-            : [InstanceType<T1>]
+export type InstanceTypes<T extends readonly (Class | AbstractClass)[]> =
+    T extends [infer T1, ...infer Tr]
+        ? T1 extends Class | AbstractClass
+            ? Tr extends readonly (Class | AbstractClass)[]
+                ? [InstanceType<T1>, ...InstanceTypes<Tr>]
+                : [InstanceType<T1>]
+            : []
         : []
-    : []
 
-export type CompositeClass<T extends readonly Class[]> = ClassStatic<T[0]> &
-    (new (...params: ConstructorParameters<T[0]>) => CompositeInstanceType<T>)
+export type CompositeClass<T extends readonly (Class | AbstractClass)[]> =
+    ClassStatic<T[0]> &
+        (new (
+            ...params: ConstructorParameters<T[0]>
+        ) => CompositeInstanceType<T>)
 
-export type CompositeInstanceType<T extends readonly Class[]> = Intersect<
-    InstanceTypes<T>
->
+export type CompositeInstanceType<
+    T extends readonly (Class | AbstractClass)[]
+> = Intersect<InstanceTypes<T>>
 
 //// Main ////
 
 /**
  * Create an extension of a given class with any number of trait definitions.
  */
-export function addTraits<T extends [Class, ...TraitDefinition[]]>(
-    ...[Class, ...Traits]: T
-): CompositeClass<T> {
+export function addTraits<
+    T extends [Class | AbstractClass, ...TraitDefinition[]]
+>(...[Class, ...Traits]: T): CompositeClass<T> {
     class ClassWithTraits extends Class {}
 
     for (const Trait of Traits) {

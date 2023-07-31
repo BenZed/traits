@@ -1,6 +1,6 @@
 {
     "name": "@benzed/traits",
-    "description": "Mixins that behave basically like runtime interfaces",
+    "description": "Standard for declaring and consuming polymorphic runtime interfaces",
     "main": "./lib",
     "version": "1.0.0",
     "publishConfig": {
@@ -40,8 +40,6 @@
         "typescript": "^5.1.3"
     },
     "dependencies": {
-        "@benzed/array": "^4.0.3",
-        "@benzed/callable": "^1.0.0",
         "@benzed/each": "^1.0.0",
         "@benzed/types": "^1.0.2",
         "@benzed/util": "^4.0.0"

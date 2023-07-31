@@ -1,7 +1,7 @@
 import { isShape, isObject, AnyTypeGuard } from '@benzed/types'
 import { unique } from '@benzed/array'
 
-import { Trait } from '../trait'
+import { trait } from '../trait'
 
 //// Symbols ////
 
@@ -17,14 +17,10 @@ const $$getOwnPropertyDescriptor = Symbol('mutator-get-own-property-descriptor')
 const $$defineProperty = Symbol('mutator-defined-property')
 const $$deleteProperty = Symbol('mutator-delete-property')
 
-//// EsLint ////
-/* eslint-disable 
-    @typescript-eslint/explicit-function-return-type,
-    @typescript-eslint/no-explicit-any
-*/
 //// Main ////
 
-abstract class Mutate<T extends object> extends Trait {
+@trait
+abstract class Mutate<T extends object> {
     static readonly target: typeof $$target = $$target
     static readonly get: typeof $$get = $$get
     static readonly set: typeof $$set = $$set
@@ -41,7 +37,7 @@ abstract class Mutate<T extends object> extends Trait {
      * Imbue a mutator with proxy traps that relegate operations to the mutate target, unless
      * the mutator defines overrides.
      */
-    static override apply<T extends Mutate<object>>(mutator: T): T {
+    static apply<T extends Mutate<object>>(mutator: T): T {
         return new Proxy(mutator, {
             get: mutator[$$get],
             set: mutator[$$set],
@@ -55,7 +51,7 @@ abstract class Mutate<T extends object> extends Trait {
         }) as T
     }
 
-    static override readonly is: <Tx extends object>(
+    static readonly is: <Tx extends object>(
         input: unknown
     ) => input is Mutate<Tx> = isShape({
         [$$target]: isObject

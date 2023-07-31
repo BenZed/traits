@@ -5,11 +5,11 @@ import { test, expect, describe } from '@jest/globals'
 import { Find, FindFlag } from './find'
 import { Relational } from './relational'
 import { PublicRelational } from './relationals'
-import { Trait } from '../trait'
+import Traits from '../trait'
 
 //// Setup ////
 
-class Person extends Trait.use(PublicRelational) {
+class Person extends Traits(PublicRelational) {
     constructor() {
         super()
         return PublicRelational.apply(this)

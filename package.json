@@ -3,6 +3,9 @@
     "description": "Mixins that behave basically like runtime interfaces",
     "main": "./lib",
     "version": "1.0.0",
+    "publishConfig": {
+        "access": "public"
+    },
     "scripts": {
         "update": "npx npm-check -u",
         "test": "jest --run-in-band --coverage --all",
@@ -38,6 +41,7 @@
     },
     "dependencies": {
         "@benzed/array": "^4.0.3",
+        "@benzed/callable": "^1.0.0",
         "@benzed/each": "^1.0.0",
         "@benzed/types": "^1.0.2",
         "@benzed/util": "^4.0.0"

@@ -8,6 +8,7 @@ import {
 } from '@benzed/types'
 import { pass } from '@benzed/util'
 import { Each, each } from '@benzed/each'
+import { AbstractCallable, Callable } from '@benzed/callable'
 
 import { Relational } from './relational'
 import {
@@ -18,10 +19,8 @@ import {
     eachParent,
     eachSibling
 } from './relations'
-import { getPath } from './path'
 
-import { Callable } from '../callable'
-import { Trait } from '../trait'
+import { getPath } from './path'
 
 /* eslint-disable
     @typescript-eslint/no-explicit-any
@@ -121,7 +120,7 @@ enum FindFlag {
 
 //// Implementation ////
 
-const Find = class RelationalFinder extends Trait.use(Callable<Func>) {
+const Find = class RelationalFinder extends AbstractCallable<Func> {
     constructor(
         readonly source: Relational,
         private _flag?: FindFlag,
@@ -175,7 +174,7 @@ const Find = class RelationalFinder extends Trait.use(Callable<Func>) {
     //// Helper ////
 
     find(input?: FindInput, error?: string): unknown {
-        const predicate = toNodePredicate(input)
+        const predicate = toPredicate(input)
 
         const found = new Set<Relational>()
         const { _flag: flag } = this
@@ -196,7 +195,7 @@ const Find = class RelationalFinder extends Trait.use(Callable<Func>) {
                     this._error ??
                     `Node ${getPath(this.source).join(
                         '/'
-                    )} Could not find node ${toNodeName(input)}`
+                    )} Could not find node ${toPredicateName(input)}`
             )
         }
 
@@ -230,12 +229,10 @@ const isRelationalTrait: (input: unknown) => input is RelationalTrait = isShape(
     }
 )
 
-function toNodePredicate(
+function toPredicate(
     input?: FindInput
 ): RelationalTypeGuard | RelationalPredicate {
     if (!input) return pass
-
-    if (isRelationalTrait(input)) return input.is
 
     if (Relational.is(input)) {
         // return Comparable.is(input)
@@ -245,12 +242,14 @@ function toNodePredicate(
         return other => Object.is(input, other)
     }
 
+    if (isRelationalTrait(input)) return input.is
+
     if (isFunc(input)) return input
 
     throw new Error('Invalid find input.')
 }
 
-function toNodeName(input?: FindInput): string {
+function toPredicateName(input?: FindInput): string {
     let name = input && 'name' in input ? input.name : ''
 
     // assume type guard with convention isModuleName

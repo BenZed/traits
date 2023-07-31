@@ -3,11 +3,11 @@ import { Relational } from './relational'
 import { getParent } from './parent'
 
 import { test, describe, expect } from '@jest/globals'
-import { Trait } from '../trait'
+import Traits from '../trait'
 
 //// Setup ////
 
-class Person extends Trait.use(Relational) {
+class Person extends Traits(Relational) {
     constructor() {
         super()
         return Relational.apply(this)

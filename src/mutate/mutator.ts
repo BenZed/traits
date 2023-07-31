@@ -1,4 +1,4 @@
-import { Trait } from '../trait'
+import Traits from '../trait'
 import Mutate from './mutate'
 
 //// Main ////
@@ -25,7 +25,7 @@ interface MutatorConstructor extends MutatorConstructorSignature {
  * Convenience base class implementing the Mutator trait that
  * simply takes the target as an argument
  */
-const Mutator = class extends Trait.use(Mutate) {
+const Mutator = class extends Traits(Mutate) {
     static readonly target: typeof Mutate.target = Mutate.target
     static readonly get: typeof Mutate.get = Mutate.get
     static readonly set: typeof Mutate.set = Mutate.set

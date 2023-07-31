@@ -1,12 +1,12 @@
 import { getPath } from './path'
 
 import { test, expect, describe } from '@jest/globals'
-import { Trait } from '../trait'
+import Traits from '../trait'
 import Relational from './relational'
 
 //// Setup ////
 
-class Person extends Trait.use(Relational) {
+class Person extends Traits(Relational) {
     constructor() {
         super()
         return Relational.apply(this)

@@ -1,12 +1,12 @@
 import { test, it, expect, describe, beforeAll } from '@jest/globals'
 
 import PublicRelational from './public-relational'
-import { Trait } from '../../trait'
+import Traits from '../../trait'
 import Relational from '../relational'
 
 //// Setup ////
 
-class Person extends Trait.use(PublicRelational) {
+class Person extends Traits(PublicRelational) {
     constructor() {
         super()
         return PublicRelational.apply(this)

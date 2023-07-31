@@ -3,7 +3,7 @@ import { GenericObject } from '@benzed/types'
 
 import { $$parent, getParent } from './parent'
 import { Relational } from './relational'
-import { Callable } from '../callable'
+import { Callable } from '@benzed/callable'
 
 //// Helper ////
 

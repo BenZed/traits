@@ -10,13 +10,13 @@ import {
     getRoot
 } from './relations'
 
-import { Trait } from '../trait'
+import { Traits } from '../trait'
 
 import Relational from './relational'
 
 //// Tests ////
 
-class Person extends Trait.use(Relational) {
+class Person extends Traits(Relational) {
     constructor() {
         super()
         return Relational.apply(this)

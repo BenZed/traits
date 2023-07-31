@@ -23,7 +23,7 @@ import {
     HasRelational
 } from './find'
 
-import { Trait } from '../trait'
+import { trait } from '../trait'
 
 //// EsLint ////
 
@@ -41,10 +41,11 @@ import { Trait } from '../trait'
  * A relational will automatically assign itself as the parent of any
  * properties that are defined in it that are also nodes.
  */
-abstract class Relational extends Trait {
+@trait
+abstract class Relational {
     static readonly parent: typeof $$parent = $$parent
 
-    static override readonly is = isRelational
+    static readonly is = isRelational
 
     static readonly setParent = setParent
 
@@ -80,7 +81,7 @@ abstract class Relational extends Trait {
      * Imbue a node with logic for assigning parents on property definition,
      * and unassign them on property deletion.
      */
-    static override apply<T extends Relational>(node: T): T {
+    static apply<T extends Relational>(node: T): T {
         const proxyNode = new Proxy(node, {
             defineProperty(node, key: keyof Relational, descriptor) {
                 const { value } = descriptor

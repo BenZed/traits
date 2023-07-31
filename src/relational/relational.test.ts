@@ -3,11 +3,11 @@ import { nil } from '@benzed/types'
 import { it, expect, describe } from '@jest/globals'
 
 import { Relational } from './relational'
-import { Trait } from '../trait'
+import Traits from '../trait'
 
 //// Types ////
 
-class Node extends Trait.use(Relational) {
+class Node extends Traits(Relational) {
     constructor(data: string) {
         super()
         Object.assign(this, { data })

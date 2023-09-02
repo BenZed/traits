@@ -1,5 +1,5 @@
 import { trait } from './decorator'
-import { isFunc, isNumber, isShape } from '@benzed/types'
+import { isFunc, isNumber, isShapeOf } from '@benzed/types'
 import { expect, test, describe } from '@jest/globals'
 
 import { Traits } from './index'
@@ -8,7 +8,7 @@ import { Traits } from './index'
 
 @trait
 abstract class Locatable {
-    static readonly is = isShape<Locatable>({
+    static readonly is = isShapeOf<Locatable>({
         x: isNumber,
         y: isNumber,
         move: isFunc
@@ -25,7 +25,7 @@ abstract class Locatable {
 
 @trait
 abstract class Timer {
-    static readonly is = isShape<Timer>({
+    static readonly is = isShapeOf<Timer>({
         time: isNumber,
         tick: isFunc
     })

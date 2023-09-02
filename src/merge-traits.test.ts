@@ -1,5 +1,5 @@
 import { test, expect } from '@jest/globals'
-import { isFunc, isNumber, isShape, isTuple } from '@benzed/types'
+import { isFunc, isNumber, isShapeOf, isTupleOf } from '@benzed/types'
 
 import { trait } from './decorator'
 
@@ -10,7 +10,7 @@ import { mergeTraits } from './merge-traits'
 
 @trait
 class Sharp {
-    static readonly is = isShape<Sharp>({
+    static readonly is = isShapeOf<Sharp>({
         sharp: isFunc
     })
 
@@ -21,7 +21,7 @@ class Sharp {
 
 @trait
 class Heavy {
-    static readonly is = isShape<Heavy>({
+    static readonly is = isShapeOf<Heavy>({
         heavy: isFunc
     })
 
@@ -63,7 +63,7 @@ test('preserves static symbols', () => {
 
     @trait
     abstract class Shape {
-        static readonly is = isShape({ sides: isNumber })
+        static readonly is = isShapeOf({ sides: isNumber })
 
         static readonly type = Symbol('shape-type')
 
@@ -72,8 +72,8 @@ test('preserves static symbols', () => {
 
     @trait
     abstract class Color {
-        static readonly is = isShape({
-            rgb: isTuple(isNumber, isNumber, isNumber)
+        static readonly is = isShapeOf({
+            rgb: isTupleOf(isNumber, isNumber, isNumber)
         })
 
         static readonly alpha = Symbol('color-alpha')
@@ -92,7 +92,7 @@ test('bugfix: does not inherit static properties of first trait', () => {
     abstract class Red {
         static readonly RED_CHANNEL_INDEX = 0
 
-        static readonly is = isShape<Red>({
+        static readonly is = isShapeOf<Red>({
             r: isNumber
         })
 
@@ -103,7 +103,7 @@ test('bugfix: does not inherit static properties of first trait', () => {
     abstract class Blue {
         static readonly BLUE_CHANNEL_INDEX = 1
 
-        static readonly is = isShape<Blue>({
+        static readonly is = isShapeOf<Blue>({
             b: isNumber
         })
 
@@ -114,7 +114,7 @@ test('bugfix: does not inherit static properties of first trait', () => {
     abstract class Green {
         static readonly GREEN_CHANNEL_INDEX = 2
 
-        static readonly is = isShape<Green>({
+        static readonly is = isShapeOf<Green>({
             b: isNumber
         })
 

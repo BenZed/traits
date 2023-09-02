@@ -1,4 +1,4 @@
-import { TypeGuard, isNumber, isShape, isString } from '@benzed/types'
+import { TypeGuard, isNumber, isShapeOf, isString } from '@benzed/types'
 
 import { trait } from './decorator'
 
@@ -9,7 +9,7 @@ import { test, expect } from '@jest/globals'
 @trait
 abstract class Size {
     //
-    static readonly is: TypeGuard<Size> = isShape({
+    static readonly is: TypeGuard<Size> = isShapeOf({
         size: isNumber
     })
 
@@ -47,7 +47,7 @@ test('cannot decorate classes with params', () => {
     // @ts-expect-error No constructor params
     @trait
     class NotATrait {
-        static readonly is = isShape({ foo: isString })
+        static readonly is = isShapeOf({ foo: isString })
 
         constructor(readonly foo: string) {}
     }

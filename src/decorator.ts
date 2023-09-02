@@ -1,14 +1,14 @@
 import { each } from '@benzed/each'
 import { define } from '@benzed/util'
-import { struct, StructStatic } from '@benzed/types'
+import { struct, StaticTypeGuard } from '@benzed/types'
 
 //// Types ////
 
 interface Trait {}
 
-type TraitDefinition =
-    | ((new () => Trait) & StructStatic)
-    | ((abstract new () => Trait) & StructStatic)
+type TraitDefinition<T extends Trait = Trait> =
+    | ((new () => T) & StaticTypeGuard<T>)
+    | ((abstract new () => T) & StaticTypeGuard<T>)
 
 //// Decorator ////
 

@@ -1,6 +1,6 @@
 import { each } from '@benzed/each'
 import { define } from '@benzed/util'
-import { Intersect, isSymbol, StructStatic } from '@benzed/types'
+import { Intersect, isSymbol, StaticTypeGuard } from '@benzed/types'
 
 import { CompositeInstanceType, addTraits } from './add-traits'
 import { trait, TraitDefinition } from './decorator'
@@ -25,14 +25,13 @@ type _SymbolsOf<T> = {
 type MergedTrait<T extends readonly TraitDefinition[]> =
     (new () => CompositeInstanceType<T>) &
         Intersect<_AllSymbolsOf<T>> &
-        StructStatic
+        StaticTypeGuard<CompositeInstanceType<T>>
 
 //// Exports ////
 
 export function mergeTraits<T extends readonly TraitDefinition[]>(
     ...traits: T
 ): MergedTrait<T> {
-    // @ts-expect-error Add composite is TypeGuard
     @trait
     class CompositeTrait {
         static is(input: unknown): input is CompositeInstanceType<T> {

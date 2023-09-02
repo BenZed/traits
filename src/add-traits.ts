@@ -1,6 +1,6 @@
 import { each } from '@benzed/each'
 import { define } from '@benzed/util'
-import { Intersect, Class, AbstractClass } from '@benzed/types'
+import { Intersect, Class, AbstractClass, Infer } from '@benzed/types'
 
 import { TraitDefinition } from './decorator'
 
@@ -34,7 +34,7 @@ export type CompositeClass<T extends readonly (Class | AbstractClass)[]> =
 
 export type CompositeInstanceType<
     T extends readonly (Class | AbstractClass)[]
-> = Intersect<InstanceTypes<T>>
+> = Infer<Intersect<InstanceTypes<T>>, object>
 
 //// Main ////
 

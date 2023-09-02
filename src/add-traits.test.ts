@@ -1,6 +1,6 @@
 import { it, expect, describe, beforeAll } from '@jest/globals'
 
-import { TypeGuard, isFunc, isShape } from '@benzed/types'
+import { TypeGuard, isFunc, isShapeOf } from '@benzed/types'
 
 import { addTraits } from './add-traits'
 import { trait } from './decorator'
@@ -10,7 +10,7 @@ import { trait } from './decorator'
 describe('creates composite classes', () => {
     @trait
     abstract class Jumpable {
-        static readonly is: TypeGuard<Jumpable> = isShape({
+        static readonly is: TypeGuard<Jumpable> = isShapeOf({
             jump: isFunc
         })
 
@@ -19,7 +19,7 @@ describe('creates composite classes', () => {
 
     @trait
     abstract class DuckAble {
-        static readonly is: TypeGuard<DuckAble> = isShape({
+        static readonly is: TypeGuard<DuckAble> = isShapeOf({
             duck: isFunc
         })
 
